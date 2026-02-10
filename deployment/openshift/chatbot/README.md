@@ -31,12 +31,31 @@ Interactive chat UI for the Amber codebase intelligence agent, deployed to OpenS
 
 ## Deploy
 
-### 1. Create the GCP service account secret
+### 1. Generate secrets
 
-Replace the placeholder `gcp-sa-key` secret with your actual service account key:
+All secret values in the manifests are placeholders (`REPLACE_ME`). Generate and set them before deploying.
 
 ```bash
+# Generate a random PostgreSQL password
+PG_PASS=$(openssl rand -base64 18)
+
+# Create the namespace
 oc create namespace chatbot
+
+# PostgreSQL credentials
+oc create secret generic postgresql \
+  --from-literal=POSTGRESQL_USER=amber \
+  --from-literal=POSTGRESQL_PASSWORD="$PG_PASS" \
+  --from-literal=POSTGRESQL_DATABASE=amber \
+  -n chatbot
+
+# Amber agent secrets
+oc create secret generic amber-agent-secrets \
+  --from-literal=GITHUB_TOKEN="ghp_your_token_here" \
+  --from-literal=POSTGRES_URL="postgresql://amber:${PG_PASS}@postgresql:5432/amber" \
+  -n chatbot
+
+# GCP service account key (for Vertex AI Model Garden)
 oc create secret generic gcp-sa-key \
   --from-file=sa-key.json=/path/to/your/gcp-sa-key.json \
   -n chatbot
@@ -48,11 +67,14 @@ Edit `amber-agent-configmap.yaml`:
 - Set `GCP_PROJECT_ID` to your GCP project ID
 - Set `GCP_REGION` to the region where Claude is available (default: `us-east5`)
 
-Edit `amber-agent-secret.yaml`:
-- Set `GITHUB_TOKEN` to your base64-encoded GitHub token
-- Verify `POSTGRES_URL` password matches `postgresql-secret.yaml`
-
 ### 3. Apply with Kustomize
+
+Since you created the secrets via `oc create` above, skip the placeholder secret manifests:
+
+```bash
+# Remove placeholder secrets from kustomization.yaml before applying,
+# or just apply and let the existing secrets take precedence
+```
 
 ```bash
 oc apply -k deployment/openshift/chatbot/
