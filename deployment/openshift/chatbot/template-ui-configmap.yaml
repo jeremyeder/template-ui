@@ -3,12 +3,8 @@ kind: ConfigMap
 metadata:
   name: template-ui-config
   labels:
-    app: template-ui
+    app: chatbot
     component: ui
 data:
-  ENVIRONMENT: "production"
-  AUTH_ENABLED: "false"
-  SSO_ISSUER_HOST: ""
-  SSO_CALLBACK_URL: ""
   AGENT_HOST: "http://amber-agent:8000"
-
+  AUTH_ENABLED: "false"

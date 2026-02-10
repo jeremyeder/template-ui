@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: chatbot
+resources:
+  - namespace.yaml
+  - postgresql-pvc.yaml
+  - postgresql-secret.yaml
+  - postgresql-deployment.yaml
+  - postgresql-service.yaml
+  - amber-agent-configmap.yaml
+  - amber-agent-secret.yaml
+  - amber-agent-deployment.yaml
+  - amber-agent-service.yaml
+  - template-ui-configmap.yaml
+  - template-ui-deployment.yaml
+  - template-ui-service.yaml
+  - template-ui-route.yaml
+  - template-ui-buildconfig.yaml
+  - template-ui-imagestream.yaml
