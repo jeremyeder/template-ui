@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amber-agent
+  labels:
+    app: chatbot
+    component: amber-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbot
+      component: amber-agent
+  template:
+    metadata:
+      labels:
+        app: chatbot
+        component: amber-agent
+    spec:
+      containers:
+        - name: amber-agent
+          image: quay.io/ambient_code/amber-langgraph:chat
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: amber-agent-config
+            - secretRef:
+                name: amber-agent-secrets
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/gcp/sa-key.json
+          volumeMounts:
+            - name: gcp-sa-key
+              mountPath: /var/secrets/gcp
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: gcp-sa-key
+          secret:
+            secretName: gcp-sa-key
+      restartPolicy: Always

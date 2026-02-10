@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  labels:
+    app: chatbot
+    component: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbot
+      component: postgresql
+  template:
+    metadata:
+      labels:
+        app: chatbot
+        component: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: registry.redhat.io/rhel9/postgresql-15:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5432
+              name: postgresql
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: postgresql
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/pgsql/data
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "512Mi"
+      volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql
+      restartPolicy: Always

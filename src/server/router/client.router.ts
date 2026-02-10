@@ -1,10 +1,9 @@
 import * as path from "node:path";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import authCheckPlugin from "../plugins/auth-check.plugin.js";
-import { agentHost } from "../utils/config.js";
 
 const appData = {
-  apiUrl: agentHost, // Agent backend URL - frontend calls agent directly
+  apiUrl: "", // Use same-origin proxy routes instead of direct agent calls
   refreshableToken: "", // Unused - token comes from USER_DATA.accessToken
 };
 
